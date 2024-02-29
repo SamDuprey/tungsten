@@ -5,6 +5,9 @@ import json
 import logging
 from pathlib import Path
 from time import perf_counter
+from tungsten.parsers.supplier.fisher_scientific.fs_sds_parser import (
+    FisherParser
+)
 
 from tungsten import SdsQueryFieldName, SigmaAldrichFieldMapper
 from tungsten.parsers.supplier.sigma_aldrich.sds_parser import (
@@ -53,21 +56,36 @@ def main():
         file_start_time = perf_counter()
         logging.info(f"Processing {filename}")
         with open(filename, "rb") as f:
-            parsed = parser.parse_to_ghs_sds(f)
-            with open(Path('msds', 'output',
-                           str(Path(filename).relative_to(Path('msds').absolute())) + ".json"),
-                      'w') as fw:
-                parsed.dump(fw)
-            with open(Path('msds', 'mapped',
-                           str(Path(filename).relative_to(Path('msds').absolute())) + ".json"),
-                      'w') as fw:
-                temp = {}
-                for field in fields:
-                    temp[field.name] = field_mapper.get_field(field, json.loads(parsed.dumps()))
-                json.dump(temp, fw)
-            # table_parser.generate_injections(f)
+            vendor = check_vendor(f)
+            if vendor == "fisher":
+                parsed = FisherParser.parse_fisher_scientific(f)
+                # with open(Path('msds', 'output',
+                #             str(Path(filename).relative_to(Path('msds').absolute())) + ".json"),
+                #         'w') as fw:
+                #     for elem in parsed:
+                #         fw.write(repr(parsed))
+            else:
+                parsed = parser.parse_to_ghs_sds(f)
+                with open(Path('msds', 'output',
+                            str(Path(filename).relative_to(Path('msds').absolute())) + ".json"),
+                        'w') as fw:
+                    parsed.dump(fw)
+                with open(Path('msds', 'mapped',
+                            str(Path(filename).relative_to(Path('msds').absolute())) + ".json"),
+                        'w') as fw:
+                    temp = {}
+                    for field in fields:
+                        temp[field.name] = field_mapper.get_field(field, json.loads(parsed.dumps()))
+                    json.dump(temp, fw)
+                # table_parser.generate_injections(f)
         logging.info(f'Parse complete in {perf_counter() - file_start_time} seconds.')
 
+def check_vendor(f):
+    parsing_elements = SigmaAldrichSdsParser.import_parsing_elements(f)
+    for i in range(0, 15):
+        if "1. identification" in parsing_elements[i].text_content.lower():
+            return "fisher"
+    return "sigma"
 
 class MultiLineFormatter(logging.Formatter):
     def format(self, record):

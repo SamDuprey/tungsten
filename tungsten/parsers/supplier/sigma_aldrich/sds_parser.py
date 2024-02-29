@@ -198,7 +198,18 @@ class SigmaAldrichSdsParser(SdsParser):
         should_skip = should_skip or element.text_content.strip() == ""
         # Skip if element is in footer
         should_skip = should_skip or element.page_y0 < 125
+        should_skip = should_skip or "US Pharmacopeia - " in element.text_content
+        should_skip = should_skip or "Sigma - " in element.text_content
+        should_skip = should_skip or "Aldrich - " in element.text_content
+        should_skip = should_skip or "SIGALD - " in element.text_content
+
+
+        should_skip = should_skip or (element.text_content.startswith("Page ") and " of " in element.text_content)
+
         return should_skip
+    
+    
+
 
     @staticmethod
     def import_parsing_elements(io: IOBase) -> list[HierarchyElement]:
@@ -234,6 +245,6 @@ class SigmaAldrichSdsParser(SdsParser):
             page_y_offset += page_length  # Add the length of the page to the offset
             page_number += 1
 
-        parsing_elements.sort(reverse=True)
+        parsing_elements.sort(reverse=False)
 
         return parsing_elements
