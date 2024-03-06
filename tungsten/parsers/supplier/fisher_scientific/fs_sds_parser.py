@@ -213,6 +213,7 @@ class FisherParser:
                     transport_results.append(("Transport Information", transport_info))
                     results.append(transport_results)
             print(results)
+            print()
             return results
 
     @staticmethod
