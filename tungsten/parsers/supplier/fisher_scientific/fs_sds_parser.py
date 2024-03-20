@@ -37,10 +37,12 @@ class FisherParser:
             found_comp = False
             for i in range(len(parsing_elements)):
                 file.write(parsing_elements[i].text_content)
-                reg = r'^\d+\.\s[^\d]+$'
-                if re.search(reg, parsing_elements[i].text_content):
-                    section_num += 1
-                    file.write("\n\nNEW SECTION\n")
+            for i in range(len(parsing_elements)):
+                # file.write(parsing_elements[i].text_content)
+                # reg = r'^\d+\.\s[^\d]+$'
+                # if re.search(reg, parsing_elements[i].text_content):
+                #     section_num += 1
+                #     file.write("\n\nNEW SECTION\n")
 
                 # section 1
                 if "Product Name" in parsing_elements[i].text_content:
@@ -126,7 +128,34 @@ class FisherParser:
                         i += 3
                     composition = "Composition", components
                     results.append(composition)
-                        
+                # end of section 3
+                    
+                # section 13
+                if "13. Disposal considerations" in parsing_elements[i].text_content:
+                    i += 1
+                    waste = ""
+                    while not "Component" in parsing_elements[i].text_content:
+                        if not "Waste Disposal Methods" in parsing_elements[i].text_content:
+                            waste = waste + parsing_elements[i].text_content.strip()
+                        i += 1
+                    temp = [("Waste Disposal Methods", waste)]
+
+                    # look for each component
+                    while not "RCRA - P Series Wastes" in parsing_elements[i].text_content:
+                        i += 1
+                    i += 1
+                    temp_comp = []
+                    all_components = []
+                    while not "14. Transport information" in parsing_elements[i].text_content:
+                        temp_comp.append(parsing_elements[i].text_content.strip())
+                        temp_comp.append(parsing_elements[i+1].text_content.strip())
+                        temp_comp.append(parsing_elements[i+2].text_content.strip())
+                        all_components.append(temp_comp)
+                        i += 3
+                    results.append(("Disposal considerations", [temp, all_components]))
+
+                # end of section 13
+
                 # section 14
                 if "DOT" in parsing_elements[i].text_content and section_num == 14:
                     transport_results = []
@@ -212,6 +241,26 @@ class FisherParser:
 
                     transport_results.append(("Transport Information", transport_info))
                     results.append(transport_results)
+                # end of section 14
+
+                # section 16
+                if "16. Other information" in parsing_elements[i].text_content:
+                    info = []
+                    while not "Email: " in parsing_elements[i].text_content:
+                        i +=1
+                    email = parsing_elements[i].text_content.replace("Email: ", "")
+                    info.append(("Email", email.strip()))
+                    info.append(("Creation Date", parsing_elements[i + 1].text_content.strip()))
+                    info.append(("Revision Date", parsing_elements[i + 3].text_content.strip()))
+                    info.append(("Print Date", parsing_elements[i + 4].text_content.strip()))
+                    i += 4
+                    information = "Other Information", info
+                    results.append(information)
+                # do I need the extra information from this section???
+
+
+                # end of section 16
+
             print(results)
             print()
             return results
