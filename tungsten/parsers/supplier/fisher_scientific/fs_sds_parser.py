@@ -112,8 +112,35 @@ class FisherParser:
                             i += 1
                     emergancy_contact = "Emergency Telephone Number", nums
                     results.append(emergancy_contact)
-                # end section 1
+                # end section 1 
 
+                # Section 2   
+                if "Hazard Statements" in parsing_elements[i].text_content:
+                    i += 1
+                    hazards = []
+                    while not "Precautionary" in parsing_elements[i].text_content:
+                        if not parsing_elements[i].text_content.strip() == '':
+                            hazards.append(parsing_elements[i].text_content.strip())
+                        i += 1
+                    hazards_statement = "Hazard(s) Identification", hazards
+                    results.append(hazards_statement)
+
+                    precautionary = []
+                    while not "Hazards not otherwise classified (HNOC)" in parsing_elements[i].text_content:
+                        if not parsing_elements[i].text_content.strip() == '':
+                            precautionary.append(parsing_elements[i].text_content.strip())
+                        i += 1
+                    precautionary_statement = "Precautionary Statements", precautionary
+                    results.append(precautionary_statement)
+
+                    # other = []
+                    # while not "Composition" in parsing_elements[i].text_content:
+                    #     if not parsing_elements[i].text_content.strip() == '':
+                    #         other.append(parsing_elements[i].text_content.strip())
+                    #     i += 1
+                    # other_statement = "Other hazards", other
+                    # results.append(other_statement)
+            
                 # section 3
                 if "3. Composition" in parsing_elements[i].text_content:
                     i += 4
@@ -129,6 +156,57 @@ class FisherParser:
                     composition = "Composition", components
                     results.append(composition)
                 # end of section 3
+                    
+                # section 6
+                if "6. Accidental release measures" in parsing_elements[i].text_content:
+                    i += 1
+                    personal_precautions = ""
+                    while not "Environmental Precautions" in parsing_elements[i + 1].text_content:
+                        if not parsing_elements[i].text_content.strip() == '' and not "Personal Precautions" in parsing_elements[i].text_content:
+                            personal_precautions += parsing_elements[i].text_content.strip() + " "
+                        i += 1
+                    
+                    personal_precautions_section = "Personal Precautions", personal_precautions
+                    results.append(personal_precautions_section)
+
+                    environmental_precautions = ""
+                    while not "Methods for Containment" in parsing_elements[i + 1].text_content:
+                        if not parsing_elements[i].text_content.strip() == '' and not "Environmental Precautions" in parsing_elements[i].text_content:
+                            environmental_precautions += parsing_elements[i].text_content.strip() + " "
+                        i += 1
+                    
+                    environmental_precautions_section = "Environmental Precautions", environmental_precautions
+                    results.append(environmental_precautions_section) 
+
+                    methods = ""
+                    while not "7. Handling" in parsing_elements[i + 1].text_content:
+                        if not parsing_elements[i].text_content.strip() == '' and not "Methods for Containment and Clean" in parsing_elements[i].text_content and not "Up" in parsing_elements[i].text_content:
+                            methods += parsing_elements[i].text_content.strip() + " "
+                        i += 1
+                    
+                    methods_section = "Methods for Containment and Clean Up", methods
+                    results.append(methods_section)
+                    
+                # section 7
+                if "7. Handling and storage" in parsing_elements[i].text_content:
+                    i += 1
+                    handling = ""
+                    while not "Storage" in parsing_elements[i + 1].text_content:
+                        if not parsing_elements[i].text_content.strip() == '' and not "Handling" in parsing_elements[i].text_content:
+                            handling += parsing_elements[i].text_content.strip() + " "
+                        i += 1
+                    
+                    handling_section = "Handling", handling
+                    results.append(handling_section)
+
+                    storage = ""
+                    while not "8. Exposure" in parsing_elements[i + 1].text_content:
+                        if not parsing_elements[i].text_content.strip() == '' and not "Storage" in parsing_elements[i].text_content:
+                            storage += parsing_elements[i].text_content.strip() + " "
+                        i += 1
+                    
+                    storage_section = "Storage", storage
+                    results.append(storage_section)
                     
                 # section 13
                 if "13. Disposal considerations" in parsing_elements[i].text_content:
