@@ -157,7 +157,7 @@ class FisherParser:
                 # end of section 13
 
                 # section 14
-                if "DOT" in parsing_elements[i].text_content and section_num == 14:
+                if "14. Transport information" in parsing_elements[i].text_content:
                     transport_results = []
                     transport_info = []
                     while not "UN" in parsing_elements[i].text_content:
@@ -178,8 +178,8 @@ class FisherParser:
                         i += 1
                     temp.append(("Packing Group", parsing_elements[i - 1].text_content.strip()))
                     transport_info.append(("DOT", temp))
-
-                if "TDG" in parsing_elements[i].text_content and section_num == 14:
+                    while not "TDG" in parsing_elements[i].text_content:
+                        i += 1
                     while not "UN" in parsing_elements[i].text_content:
                         i += 1
                     temp = []
@@ -199,7 +199,8 @@ class FisherParser:
                     temp.append(("Packing Group", parsing_elements[i - 1].text_content.strip()))
                     transport_info.append(("TDG", temp))
                                         
-                if "IATA" in parsing_elements[i].text_content and section_num == 14:
+                    while not "IATA" in parsing_elements[i].text_content:
+                        i += 1
                     while not "UN" in parsing_elements[i].text_content:
                         i += 1
                     temp = []
@@ -218,8 +219,8 @@ class FisherParser:
                         i += 1
                     temp.append(("Packing Group", parsing_elements[i - 1].text_content.strip()))
                     transport_info.append(("IATA", temp))
-                                        
-                if "IMDG" in parsing_elements[i].text_content and section_num == 14:
+                    while not "IMDG" in parsing_elements[i].text_content:
+                        i += 1            
                     while not "UN" in parsing_elements[i].text_content:
                         i += 1
                     temp = []
