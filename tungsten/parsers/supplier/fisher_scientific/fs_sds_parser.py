@@ -35,6 +35,7 @@ class FisherParser:
             section_num = 0
             found_cas = False
             found_comp = False
+            section14 = True
             for i in range(len(parsing_elements)):
                 file.write(parsing_elements[i].text_content)
             for i in range(len(parsing_elements)):
@@ -235,7 +236,8 @@ class FisherParser:
                 # end of section 13
 
                 # section 14
-                if "14. Transport information" in parsing_elements[i].text_content:
+                if "14. Transport information" in parsing_elements[i].text_content and section14:
+                    section14 = False
                     transport_results = []
                     transport_info = []
                     while not "UN" in parsing_elements[i].text_content:
