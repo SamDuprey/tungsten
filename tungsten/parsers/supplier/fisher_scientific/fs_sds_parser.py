@@ -36,14 +36,13 @@ class FisherParser:
             found_cas = False
             found_comp = False
             section14 = True
+
+            # write everything to a file to see the format of the elements
             for i in range(len(parsing_elements)):
                 file.write(parsing_elements[i].text_content)
+
+            # now go through line by line
             for i in range(len(parsing_elements)):
-                # file.write(parsing_elements[i].text_content)
-                # reg = r'^\d+\.\s[^\d]+$'
-                # if re.search(reg, parsing_elements[i].text_content):
-                #     section_num += 1
-                #     file.write("\n\nNEW SECTION\n")
 
                 # section 1
                 if "Product Name" in parsing_elements[i].text_content:
@@ -90,6 +89,7 @@ class FisherParser:
                     found_comp = True
                     companies = []
                     i += 1
+                    # loops through since multiple lines of info for some formats
                     while not "Fisher" in parsing_elements[i].text_content:
                         if not parsing_elements[i].text_content.strip() == '':
                             companies.append(parsing_elements[i].text_content.strip())
@@ -148,6 +148,8 @@ class FisherParser:
                     reg = r'^\d+\.\s[^\d]+$'
                     components = []
                     temp_component = []
+
+                    # loops thorough all componenets in the table row by row
                     while not re.search(reg, parsing_elements[i].text_content):
                         temp_component = [parsing_elements[i].text_content.strip(),
                                             parsing_elements[i+1].text_content.strip(),
@@ -157,7 +159,7 @@ class FisherParser:
                     composition = "Composition", components
                     results.append(composition)
                 # end of section 3
-                    
+
                 # section 6
                 if "6. Accidental release measures" in parsing_elements[i].text_content:
                     i += 1
@@ -209,6 +211,43 @@ class FisherParser:
                     storage_section = "Storage", storage
                     results.append(storage_section)
                     
+                # section 12
+                if "12. Ecological information" in parsing_elements[i].text_content:
+                    while "Ecotoxicity" not in parsing_elements[i].text_content:
+                        i += 1
+                    i += 1
+                    eco = ["Ecotoxitcity", parsing_elements[i].text_content.strip()]
+
+                    # dealing with the different text sections
+                    while "Component" not in parsing_elements[i].text_content:
+                        i += 1
+                    i += 5
+                    while "Persistence and Degradability" not in parsing_elements[i].text_content:
+                        i += 1
+                    temp = ["Persistence and Degradability", parsing_elements[i - 1].text_content.strip()]
+                    accum = ["Bioaccumulation/Accumulation", parsing_elements[i + 1].text_content.strip()]
+                    overall = ["Ecological information"] 
+                    overall.append(eco)
+                    overall.append(temp)
+                    overall.append(accum)
+
+                    # one table that I am not sure how to parse is here
+
+                    while "Mobility" not in parsing_elements[i].text_content:
+                        i += 1
+                    mob = ["Mobility", parsing_elements[i - 1].text_content.strip()]
+                    overall.append(mob)
+                    i += 3
+                    log_pow = ["log pow"]
+                    while "13. Disposal considerations" not in parsing_elements[i].text_content:
+                        tempComp = [parsing_elements[i].text_content, parsing_elements[i + 1].text_content.strip()]
+                        log_pow.append(tempComp)
+                        i += 2
+                    overall.append(log_pow)
+                    results.append(overall)
+                # end section 12
+
+
                 # section 13
                 if "13. Disposal considerations" in parsing_elements[i].text_content:
                     i += 1
@@ -240,6 +279,7 @@ class FisherParser:
                     section14 = False
                     transport_results = []
                     transport_info = []
+                    # DOT
                     while not "UN" in parsing_elements[i].text_content:
                         i += 1
                     temp = []
@@ -250,7 +290,6 @@ class FisherParser:
                     while not "Hazard Class" in parsing_elements[i].text_content:
                         i += 1
                     temp.append(("Hazard Class", parsing_elements[i - 1].text_content.strip()))
-
                     for j in range(0, 6):
                         if "Subsidiary Hazard Class" in parsing_elements[i+j].text_content:
                             temp.append(("Subsidiary Hazard Class", parsing_elements[i + j - 1].text_content.strip()))
@@ -258,6 +297,8 @@ class FisherParser:
                         i += 1
                     temp.append(("Packing Group", parsing_elements[i - 1].text_content.strip()))
                     transport_info.append(("DOT", temp))
+
+                    # TDG
                     while not "TDG" in parsing_elements[i].text_content:
                         i += 1
                     while not "UN" in parsing_elements[i].text_content:
@@ -270,7 +311,6 @@ class FisherParser:
                     while not "Hazard Class" in parsing_elements[i].text_content:
                         i += 1
                     temp.append(("Hazard Class", parsing_elements[i - 1].text_content.strip()))
-
                     for j in range(0, 6):
                         if "Subsidiary Hazard Class" in parsing_elements[i+j].text_content:
                             temp.append(("Subsidiary Hazard Class", parsing_elements[i + j - 1].text_content.strip()))
@@ -278,7 +318,8 @@ class FisherParser:
                         i += 1
                     temp.append(("Packing Group", parsing_elements[i - 1].text_content.strip()))
                     transport_info.append(("TDG", temp))
-                                        
+
+                    # IATA
                     while not "IATA" in parsing_elements[i].text_content:
                         i += 1
                     while not "UN" in parsing_elements[i].text_content:
@@ -291,7 +332,6 @@ class FisherParser:
                     while not "Hazard Class" in parsing_elements[i].text_content:
                         i += 1
                     temp.append(("Hazard Class", parsing_elements[i - 1].text_content.strip()))
-
                     for j in range(0, 6):
                         if "Subsidiary Hazard Class" in parsing_elements[i+j].text_content:
                             temp.append(("Subsidiary Hazard Class", parsing_elements[i + j - 1].text_content.strip()))
@@ -299,6 +339,8 @@ class FisherParser:
                         i += 1
                     temp.append(("Packing Group", parsing_elements[i - 1].text_content.strip()))
                     transport_info.append(("IATA", temp))
+
+                    # IMDG/IMO
                     while not "IMDG" in parsing_elements[i].text_content:
                         i += 1            
                     while not "UN" in parsing_elements[i].text_content:
@@ -311,7 +353,6 @@ class FisherParser:
                     while not "Hazard Class" in parsing_elements[i].text_content:
                         i += 1
                     temp.append(("Hazard Class", parsing_elements[i - 1].text_content.strip()))
-
                     for j in range(0, 6):
                         if "Subsidiary Hazard Class" in parsing_elements[i+j].text_content:
                             temp.append(("Subsidiary Hazard Class", parsing_elements[i + j - 1].text_content.strip()))
@@ -337,8 +378,8 @@ class FisherParser:
                     i += 4
                     information = "Other Information", info
                     results.append(information)
-                # do I need the extra information from this section???
 
+                    # there is some extra information that is mostly covered in other places
 
                 # end of section 16
 
