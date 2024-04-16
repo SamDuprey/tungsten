@@ -16,7 +16,7 @@ class FisherParser:
 
         parsing_elements = []
         results = []
-        element_name = ".....................................1111111111111111111122222222222222222222---"
+        element_name = ""
         for k in range(0, len(pre_parsing_elements)):
             
             if not FisherParser.should_skip_element(pre_parsing_elements[k]):
